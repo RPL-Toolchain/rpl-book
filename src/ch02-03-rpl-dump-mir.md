@@ -1,4 +1,4 @@
-# rpl::dump_mir: a gadget for MIR dumping
+# rpl::dump_mir: A Gadget for MIR Dumping
 
 To effectively model a code pattern, it is often necessary to first inspect the MIR of the target function. RPL provides the #[rpl::dump_mir] procedural macro to simplify this process. This macro instructs the customized compiler to output the MIR of a target function, providing clear intermediate artifacts that can be used to model/define a new RPL pattern.
 

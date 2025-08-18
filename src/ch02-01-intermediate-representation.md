@@ -64,11 +64,322 @@ add:
 
 The LLVM IR represents a optimized version of a function named `@add` which computes the sum of two 32-bit integers. It directly takes the two input registers (`%0` and `%1`), performs the addition with a single `add` instruction, and immediately returns the result (`%3`). The function attributes, such as `memory(none)` (indicating it doesn't read or write from memory) and `willreturn`, confirm that the compiler has aggressively optimized the code, eliminating all unnecessary memory operations.
 
-## Intermediate Representation in Rust
+## Rust's Intermediate Representations
 
-The Rust compiler uses a pipeline of several IRs to transform Rust source code into machine code.
+The Rust compiler transforms source code into machine code through a pipeline of intermediate representations (IRs). This journey from high-level to low-level code involves several key stages:
 
-1. HIR
-2. THIR
-3. MIR
-4. LLVM IR
+-   **HIR** (High-level IR)
+-   **THIR** (Typed HIR)
+-   **MIR** (Mid-level IR)
+-   **LLVM IR**
+
+To see this process in action, we'll examine the IRs generated for the following generic `add` function.
+
+```rust
+use std::ops::Add;
+
+fn add<T: Add<Output = T>>(a: T, b: T) -> T {
+    a + b
+}
+```
+
+### HIR - High-Level Intermediate Representation
+
+The HIR is the primary IR used in most of rustc. It is a compiler-friendly representation of the abstract syntax tree (AST).
+
+-   HIR is generated after parsing, macro expansion, and name resolution.
+
+**HIR is used for type checking.**
+
+```rust
+// cargo rustc -- -Z unpretty=hir
+#[prelude_import]
+use std::prelude::rust_2024::*;
+#[attr = MacroUse {arguments: UseAll}]
+extern crate std;
+use std::ops::Add;
+
+fn add<T>(a: T, b: T) -> T where T: Add<Output = T> { a + b }
+```
+
+### THIR - Typed High-Level Intermediate Representation
+
+The THIR is a lowered version of the HIR where all the types have been filled in, which is possible after type checking has completed. But it has some other features that distinguish it from the HIR:
+
+-   Like the MIR, the THIR only represents bodies, i.e. "executable code"; this includes function bodies, but also const initializers.
+-   Each body of THIR is only stored temporarily and is dropped as soon as it's no longer needed, as opposed to being stored until the end of the compilation process.
+-   Besides making the types of all nodes available, the THIR also has additional desugaring compared to the HIR. For example, automatic references and dereferences are made explicit, and method calls and overloaded operators are converted into plain function calls. Destruction scopes are also made explicit.
+-   Statements, expressions, and match arms are stored separately.
+
+**THIR is used for MIR construction, exhaustiveness checking, and unsafety checking.**
+
+```rust
+// cargo rustc -- -Z unpretty=thir-flat
+DefId(0:4 ~ rust_playground[a18a]::add):
+Thir {
+    body_type: Fn(
+        fn(T/#0, T/#0) -> T/#0,
+    ),
+    arms: [],
+    blocks: [
+        Block {
+            targeted_by_break: false,
+            region_scope: Node(5),
+            span: src/lib.rs:3:45: 5:2 (#0),
+            stmts: [],
+            expr: Some(
+                e6,
+            ),
+            safety_mode: Safe,
+        },
+    ],
+    exprs: [
+        Expr {
+            kind: VarRef {
+                id: LocalVarId(
+                    HirId(DefId(0:4 ~ rust_playground[a18a]::add).2),
+                ),
+            },
+            ty: T/#0,
+            temp_lifetime: TempLifetime {
+                temp_lifetime: Some(
+                    Node(11),
+                ),
+                backwards_incompatible: None,
+            },
+            span: src/lib.rs:4:5: 4:6 (#0),
+        },
+        Expr {
+            kind: Scope {
+                region_scope: Node(7),
+                lint_level: Explicit(
+                    HirId(DefId(0:4 ~ rust_playground[a18a]::add).7),
+                ),
+                value: e0,
+            },
+            ty: T/#0,
+            temp_lifetime: TempLifetime {
+                temp_lifetime: Some(
+                    Node(11),
+                ),
+                backwards_incompatible: None,
+            },
+            span: src/lib.rs:4:5: 4:6 (#0),
+        },
+        Expr {
+            kind: VarRef {
+                id: LocalVarId(
+                    HirId(DefId(0:4 ~ rust_playground[a18a]::add).4),
+                ),
+            },
+            ty: T/#0,
+            temp_lifetime: TempLifetime {
+                temp_lifetime: Some(
+                    Node(11),
+                ),
+                backwards_incompatible: None,
+            },
+            span: src/lib.rs:4:9: 4:10 (#0),
+        },
+        Expr {
+            kind: Scope {
+                region_scope: Node(9),
+                lint_level: Explicit(
+                    HirId(DefId(0:4 ~ rust_playground[a18a]::add).9),
+                ),
+                value: e2,
+            },
+            ty: T/#0,
+            temp_lifetime: TempLifetime {
+                temp_lifetime: Some(
+                    Node(11),
+                ),
+                backwards_incompatible: None,
+            },
+            span: src/lib.rs:4:9: 4:10 (#0),
+        },
+        Expr {
+            kind: ZstLiteral {
+                user_ty: None,
+            },
+            ty: FnDef(
+                DefId(2:3797 ~ core[f655]::ops::arith::Add::add),
+                [
+                    T/#0,
+                    T/#0,
+                ],
+            ),
+            temp_lifetime: TempLifetime {
+                temp_lifetime: Some(
+                    Node(11),
+                ),
+                backwards_incompatible: None,
+            },
+            span: src/lib.rs:4:5: 4:10 (#0),
+        },
+        Expr {
+            kind: Call {
+                ty: FnDef(
+                    DefId(2:3797 ~ core[f655]::ops::arith::Add::add),
+                    [
+                        T/#0,
+                        T/#0,
+                    ],
+                ),
+                fun: e4,
+                args: [
+                    e1,
+                    e3,
+                ],
+                from_hir_call: false,
+                fn_span: src/lib.rs:4:5: 4:10 (#0),
+            },
+            ty: T/#0,
+            temp_lifetime: TempLifetime {
+                temp_lifetime: Some(
+                    Node(11),
+                ),
+                backwards_incompatible: None,
+            },
+            span: src/lib.rs:4:5: 4:10 (#0),
+        },
+        Expr {
+            kind: Scope {
+                region_scope: Node(6),
+                lint_level: Explicit(
+                    HirId(DefId(0:4 ~ rust_playground[a18a]::add).6),
+                ),
+                value: e5,
+            },
+            ty: T/#0,
+            temp_lifetime: TempLifetime {
+                temp_lifetime: Some(
+                    Node(11),
+                ),
+                backwards_incompatible: None,
+            },
+            span: src/lib.rs:4:5: 4:10 (#0),
+        },
+        Expr {
+            kind: Block {
+                block: b0,
+            },
+            ty: T/#0,
+            temp_lifetime: TempLifetime {
+                temp_lifetime: Some(
+                    Node(11),
+                ),
+                backwards_incompatible: None,
+            },
+            span: src/lib.rs:3:45: 5:2 (#0),
+        },
+        Expr {
+            kind: Scope {
+                region_scope: Node(11),
+                lint_level: Explicit(
+                    HirId(DefId(0:4 ~ rust_playground[a18a]::add).11),
+                ),
+                value: e7,
+            },
+            ty: T/#0,
+            temp_lifetime: TempLifetime {
+                temp_lifetime: Some(
+                    Node(11),
+                ),
+                backwards_incompatible: None,
+            },
+            span: src/lib.rs:3:45: 5:2 (#0),
+        },
+    ],
+    stmts: [],
+    params: [
+        Param {
+            pat: Some(
+                Pat {
+                    ty: T/#0,
+                    span: src/lib.rs:3:28: 3:29 (#0),
+                    kind: Binding {
+                        name: "a",
+                        mode: BindingMode(
+                            No,
+                            Not,
+                        ),
+                        var: LocalVarId(
+                            HirId(DefId(0:4 ~ rust_playground[a18a]::add).2),
+                        ),
+                        ty: T/#0,
+                        subpattern: None,
+                        is_primary: true,
+                    },
+                },
+            ),
+            ty: T/#0,
+            ty_span: Some(
+                src/lib.rs:3:31: 3:32 (#0),
+            ),
+            self_kind: None,
+            hir_id: Some(
+                HirId(DefId(0:4 ~ rust_playground[a18a]::add).1),
+            ),
+        },
+        Param {
+            pat: Some(
+                Pat {
+                    ty: T/#0,
+                    span: src/lib.rs:3:34: 3:35 (#0),
+                    kind: Binding {
+                        name: "b",
+                        mode: BindingMode(
+                            No,
+                            Not,
+                        ),
+                        var: LocalVarId(
+                            HirId(DefId(0:4 ~ rust_playground[a18a]::add).4),
+                        ),
+                        ty: T/#0,
+                        subpattern: None,
+                        is_primary: true,
+                    },
+                },
+            ),
+            ty: T/#0,
+            ty_span: Some(
+                src/lib.rs:3:37: 3:38 (#0),
+            ),
+            self_kind: None,
+            hir_id: Some(
+                HirId(DefId(0:4 ~ rust_playground[a18a]::add).3),
+            ),
+        },
+    ],
+}
+```
+
+### MIR - Mid-Level Intermediate Representation
+
+MIR is Rust's Mid-level Intermediate Representation. It is constructed from THIR.
+
+Some of the key characteristics of MIR are:
+
+-   It is based on a control-flow graph.
+-   It does not have nested expressions.
+-   All types in MIR are fully explicit.
+
+MIR is used for certain flow-sensitive safety checks (borrow checker) , optimization, code generation.
+
+```rust
+// cargo rustc -- -Z unpretty=mir
+fn add(_1: T, _2: T) -> T {
+    debug a => _1;
+    debug b => _2;
+    let mut _0: T;
+
+    bb0: {
+        _0 = <T as Add>::add(move _1, move _2) -> [return: bb1, unwind continue];
+    }
+
+    bb1: {
+        return;
+    }
+}
+```
