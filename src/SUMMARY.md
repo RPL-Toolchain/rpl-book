@@ -12,4 +12,6 @@
     -   [The Core Concepts of MIR](ch02-02-the-core-concepts-mir.md)
     -   [`rpl::dump_mir`: A Gadget for MIR Dumping](ch02-03-rpl-dump-mir.md)
 
--   [The Architecture of RPL-Toolchain](ch03-00-the-architecture-of-rpl-toolchain.md)
+-   [Architecture of RPL](ch03-00-architecture-of-rpl.md)
+    -   [Workflow](ch03-01-workflow.md)
+    -   [Implementation Architecture](ch03-02-implementation-architecture.md)
