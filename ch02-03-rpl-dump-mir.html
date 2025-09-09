@@ -1,0 +1,321 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>rpl::dump_mir: A Gadget for MIR Dumping - The RPL Book</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The RPL Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="rpldump_mir-a-gadget-for-mir-dumping"><a class="header" href="#rpldump_mir-a-gadget-for-mir-dumping">rpl::dump_mir: A Gadget for MIR Dumping</a></h1>
+<p>To effectively model a code pattern, it is often necessary to first inspect the MIR of the target function. RPL provides the #[rpl::dump_mir] procedural macro to simplify this process. This macro instructs the customized compiler to output the MIR of a target function, providing clear intermediate artifacts that can be used to model/define a new RPL pattern.</p>
+<h2 id="usage"><a class="header" href="#usage">Usage</a></h2>
+<p>Using the macro involves a simple two-step process.</p>
+<p><strong>(1) Annotate the Target Function</strong>: First, apply the <code>#[rpl::dump_mir]</code> attribute directly to the function whose MIR you wish to inspect. The macro accepts optional arguments, such as dump_cfg and dump_ddg, to also generate graph visualizations.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::mem;
+
+#[rpl::dump_mir(dump_cfg, dump_ddg)]
+pub unsafe fn get_data&lt;T: ?Sized&gt;(val: *const T) -&gt; *const () {
+    unsafe { *mem::transmute::&lt;*const *const T, *const *const ()&gt;(&amp;val) }
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>(2) Run the RPL Linter</strong>: Next, run cargo rpl from your project's root directory. For this debugging macro to work, the RPL_PATS environment variable must be set, but it can point to an empty directory if you are only dumping MIR.</p>
+<pre><code class="language-bash">RPL_PATS=/path/to/any/pattern/dir cargo rpl
+</code></pre>
+<h2 id="output"><a class="header" href="#output">Output</a></h2>
+<p>The macro produces output in two places: directly in the console and in a new directory in your project root.</p>
+<h3 id="console-output"><a class="header" href="#console-output">Console Output</a></h3>
+<p>The compiler will print the formatted MIR and other diagnostic information directly to your terminal. This includes a breakdown of the function's local variables and the statements within each basic block.</p>
+<pre><code class="language-shell">note: MIR of `get_data`
+ --&gt; src/main.rs:4:1
+  |
+3 |   #[rpl::dump_mir(dump_cfg, dump_ddg)]
+  |   ------------------------------------ MIR dumped because of this attribute
+...
+note: bb0: {
+        _4 = &amp;_1;                       // scope[0]
+        _3 = &amp;raw const (*_4);          // scope[0]
+        _2 = move _3 as *const *const () (Transmute); // scope[0]
+        _0 = copy (*_2);                // scope[0]
+        return;                         // scope[0]
+    }
+...
+error: abort due to debugging
+ --&gt; src/main.rs:3:1
+  |
+3 | #[rpl::dump_mir(dump_cfg, dump_ddg)]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: remove this attribute
+</code></pre>
+<p>Note that the process intentionally ends with an <code>error: abort due to debugging</code>. This is a feature designed to remind you to remove the debugging attribute before committing your code.</p>
+<h3 id="generated-artifacts"><a class="header" href="#generated-artifacts">Generated Artifacts</a></h3>
+<p>The macro will also create a <code>mir_dump</code> directory in your project root containing several files. These artifacts provide a more detailed and persistent record of the function's structure.</p>
+<pre><code class="language-bash">mir_dump/
+├── rust_playground.get_data.-------.dump_mir..mir
+├── rust_playground.get_data.-------.dump_mir..mir.cfg.dot
+└── rust_playground.get_data.-------.dump_mir..mir.ddg.dot
+</code></pre>
+<ul>
+<li>
+<p><code>.mir</code> file: The raw, textual representation of the function's MIR.</p>
+</li>
+<li>
+<p><code>.cfg.dot</code> file: A representation of the Control-Flow Graph (CFG) in DOT format, which can be visualized with tools like <a href="https://graphviz.org/">Graphviz</a>.</p>
+</li>
+<li>
+<p><code>.ddg.dot</code> file: A representation of the Data-Dependence Graph (DDG) in DOT format.</p>
+</li>
+</ul>
+<p>The following image shows the CFG and DDG of the <code>get_data</code> function.</p>
+<p><img src="images/dump-mir-cfg.png" alt="CFG of get_data function" /></p>
+<p><img src="images/dump-mir-ddg.png" alt="DDG of get_data function" /></p>
+<h3 id="modeling-a-rpl-pattern-from-mir"><a class="header" href="#modeling-a-rpl-pattern-from-mir">Modeling a RPL Pattern from MIR</a></h3>
+<p>The primary use of the dumped MIR is to serve as a template for a new RPL pattern. The process involves "hollowing out" the concrete MIR by replacing its specific local variables with abstract metavariables.</p>
+<p>For example, consider the dumped MIR above:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Dumped MIR from console
+bb0: {
+    _4: &amp;*const T = &amp;_1;
+    _3: *const *const T = &amp;raw const (*_4);
+    _2: *const *const () = move _3 as *const *const () (Transmute);
+    _0: *const () = copy (*_2);
+    return;
+}
+<span class="boring">}</span></code></pre></pre>
+<p>Converting the raw MIR dump into a functional RPL pattern is a systematic process. The key steps are to add the necessary syntactic structure and then abstract the logic with metavariables.</p>
+<ol>
+<li><strong>Add <code>let</code> bindings:</strong> Convert each raw MIR assignment (e.g., <code>_4 = &amp;_1;</code>) into a full <code>let</code> statement.</li>
+<li><strong>Annotate types:</strong> Use the list of locals provided in the MIR dump to add explicit type annotations for each local variable.</li>
+<li><strong>Abstract the pattern with metavariables</strong>. This is where you "hollow out" the concrete MIR to make it a general template. You replace the specific, compiler-generated names for locals and types with descriptive, abstract metavariables (prefixed with <code>$</code>). For example, the concrete local <code>_1</code> of type <code>*const T</code> becomes the abstract statement <code>let $ptr: *const $T = _;</code>. By applying this process to all statements, you transform the specific MIR dump into a reusable pattern.</li>
+</ol>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let $ptr: *const $T = _; // _1
+let $ref_to_ptr: &amp;*const $T = &amp;$ptr; // _4
+let $ptr_to_ptr_t: *const *const $T = &amp;raw const (*$ref_to_ptr); // _3
+let $ptr_to_ptr: *const *const () = move $ptr_to_ptr_t as *const *const () (Transmute); // _2
+let $data_ptr: *const () = copy (*$ptr_to_ptr); // _0
+<span class="boring">}</span></code></pre></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="ch02-02-the-core-concepts-mir.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="ch03-00-the-pattern-modeling-language.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="ch02-02-the-core-concepts-mir.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="ch03-00-the-pattern-modeling-language.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>
