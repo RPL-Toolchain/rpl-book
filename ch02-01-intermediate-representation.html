@@ -1,0 +1,596 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Intermediate Representation - The RPL Book</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The RPL Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="intermediate-representation"><a class="header" href="#intermediate-representation">Intermediate Representation</a></h1>
+<h2 id="what-is-ir"><a class="header" href="#what-is-ir">What is IR?</a></h2>
+<p>In the architecture of a modern compiler, the process of translating human-readable source code into machine-executable code is not a single, monolithic step. Instead, the compiler is typically divided into three main stages: the frontend, the middle-end, and the backend. The Intermediate Representation (IR) is the crucial data structure or code format that acts as the bridge between the frontend and the backend.</p>
+<ol>
+<li>
+<p>Frontend: Parses the source code (like Rust, C++, or Swift), checks for syntax errors, and performs semantic analysis. It then translates the source code into an IR.</p>
+</li>
+<li>
+<p>Middle-end (Optimizer): Takes the IR from the frontend, performs a series of machine-independent optimizations to improve the code's performance and efficiency. The output of this stage is still the (now optimized) IR.</p>
+</li>
+<li>
+<p>Backend (Code Generator): Takes the optimized IR and translates it into machine code for a specific target architecture (like x86-64, ARM64, etc.).</p>
+</li>
+</ol>
+<p>The use of an IR provides a powerful abstraction that decouples the source language from the target machine. This means you can write frontends for many different languages and backends for many different architectures, and have them all work together through the common IR.</p>
+<p>LLVM (Low Level Virtual Machine) is a collection of modular and reusable compiler and toolchain technologies. Its Intermediate Representation, LLVM IR, is one of its most influential components. It's a low-level, statically typed, and language-independent IR designed to be the target of a wide variety of frontends and the source for many backends.A key feature of LLVM IR is that it is in Static Single Assignment (SSA) form. In SSA form, every variable is assigned a value exactly once. If a variable's value needs to be updated (e.g., in a loop), a new variable is created instead. This makes many optimizations, like data-flow analysis, significantly simpler to implement.</p>
+<p>The following example shows the LLVM IR and machine code of a simple C code:</p>
+<p><strong>C code:</strong></p>
+<pre><code class="language-c">int add(int a, int b) {
+    int result = a + b;
+    return result;
+}
+</code></pre>
+<p><strong>LLVM IR:</strong></p>
+<pre><code class="language-llvm">; Generated by Clang 17.0.0 (clang-1700.0.13.3)
+; clang -S -emit-llvm add.c -o add.ll -O1
+; ModuleID = 'add.c'
+source_filename = "add.c"
+target datalayout = "e-m:o-i64:64-i128:128-n32:64-S128-Fn32"
+target triple = "arm64-apple-macosx15.0.0"
+
+; Function Attrs: mustprogress nofree norecurse nosync nounwind ssp willreturn memory(none) uwtable(sync)
+define i32 @add(i32 noundef %0, i32 noundef %1) local_unnamed_addr #0 {
+  %3 = add nsw i32 %1, %0
+  ret i32 %3
+}
+
+attributes #0 = { mustprogress nofree norecurse nosync nounwind ssp willreturn memory(none) uwtable(sync) "frame-pointer"="non-leaf" "no-trapping-math"="true" "probe-stack"="__chkstk_darwin" "stack-protector-buffer-size"="8" "target-cpu"="apple-m1" "target-features"="+aes,+altnzcv,+bti,+ccdp,+ccidx,+complxnum,+crc,+dit,+dotprod,+flagm,+fp-armv8,+fp16fml,+fptoint,+fullfp16,+jsconv,+lse,+neon,+pauth,+perfmon,+predres,+ras,+rcpc,+rdm,+sb,+sha2,+sha3,+specrestrict,+ssbs,+v8.1a,+v8.2a,+v8.3a,+v8.4a,+v8.5a,+v8a,+zcm,+zcz" }
+
+!llvm.module.flags = !{!0, !1, !2, !3, !4}
+!llvm.ident = !{!5}
+
+!0 = !{i32 2, !"SDK Version", [2 x i32] [i32 15, i32 4]}
+!1 = !{i32 1, !"wchar_size", i32 4}
+!2 = !{i32 8, !"PIC Level", i32 2}
+!3 = !{i32 7, !"uwtable", i32 1}
+!4 = !{i32 7, !"frame-pointer", i32 1}
+!5 = !{!"Apple clang version 17.0.0 (clang-1700.0.13.3)"}
+</code></pre>
+<p><strong>Machine code:</strong></p>
+<pre><code class="language-asm">add:
+    lea     eax, [rdi+rsi]
+    ret
+</code></pre>
+<p>The LLVM IR represents a optimized version of a function named <code>@add</code> which computes the sum of two 32-bit integers. It directly takes the two input registers (<code>%0</code> and <code>%1</code>), performs the addition with a single <code>add</code> instruction, and immediately returns the result (<code>%3</code>). The function attributes, such as <code>memory(none)</code> (indicating it doesn't read or write from memory) and <code>willreturn</code>, confirm that the compiler has aggressively optimized the code, eliminating all unnecessary memory operations.</p>
+<h2 id="rusts-intermediate-representations"><a class="header" href="#rusts-intermediate-representations">Rust's Intermediate Representations</a></h2>
+<p>The Rust compiler transforms source code into machine code through a pipeline of intermediate representations (IRs). This journey from high-level to low-level code involves several key stages:</p>
+<ul>
+<li><strong>HIR</strong> (High-level IR)</li>
+<li><strong>THIR</strong> (Typed HIR)</li>
+<li><strong>MIR</strong> (Mid-level IR)</li>
+<li><strong>LLVM IR</strong></li>
+</ul>
+<p>To see this process in action, we'll examine the IRs generated for the following generic <code>add</code> function.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::ops::Add;
+
+fn add&lt;T: Add&lt;Output = T&gt;&gt;(a: T, b: T) -&gt; T {
+    a + b
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="hir---high-level-intermediate-representation"><a class="header" href="#hir---high-level-intermediate-representation">HIR - High-Level Intermediate Representation</a></h3>
+<p>The HIR is the primary IR used in most of rustc. It is a compiler-friendly representation of the abstract syntax tree (AST).</p>
+<ul>
+<li>HIR is generated after parsing, macro expansion, and name resolution.</li>
+</ul>
+<p><strong>HIR is used for type checking.</strong></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// cargo rustc -- -Z unpretty=hir
+#[prelude_import]
+use std::prelude::rust_2024::*;
+#[attr = MacroUse {arguments: UseAll}]
+extern crate std;
+use std::ops::Add;
+
+fn add&lt;T&gt;(a: T, b: T) -&gt; T where T: Add&lt;Output = T&gt; { a + b }
+<span class="boring">}</span></code></pre></pre>
+<h3 id="thir---typed-high-level-intermediate-representation"><a class="header" href="#thir---typed-high-level-intermediate-representation">THIR - Typed High-Level Intermediate Representation</a></h3>
+<p>The THIR is a lowered version of the HIR where all the types have been filled in, which is possible after type checking has completed. But it has some other features that distinguish it from the HIR:</p>
+<ul>
+<li>Like the MIR, the THIR only represents bodies, i.e. "executable code"; this includes function bodies, but also const initializers.</li>
+<li>Each body of THIR is only stored temporarily and is dropped as soon as it's no longer needed, as opposed to being stored until the end of the compilation process.</li>
+<li>Besides making the types of all nodes available, the THIR also has additional desugaring compared to the HIR. For example, automatic references and dereferences are made explicit, and method calls and overloaded operators are converted into plain function calls. Destruction scopes are also made explicit.</li>
+<li>Statements, expressions, and match arms are stored separately.</li>
+</ul>
+<p><strong>THIR is used for MIR construction, exhaustiveness checking, and unsafety checking.</strong></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// cargo rustc -- -Z unpretty=thir-flat
+DefId(0:4 ~ rust_playground[a18a]::add):
+Thir {
+    body_type: Fn(
+        fn(T/#0, T/#0) -&gt; T/#0,
+    ),
+    arms: [],
+    blocks: [
+        Block {
+            targeted_by_break: false,
+            region_scope: Node(5),
+            span: src/lib.rs:3:45: 5:2 (#0),
+            stmts: [],
+            expr: Some(
+                e6,
+            ),
+            safety_mode: Safe,
+        },
+    ],
+    exprs: [
+        Expr {
+            kind: VarRef {
+                id: LocalVarId(
+                    HirId(DefId(0:4 ~ rust_playground[a18a]::add).2),
+                ),
+            },
+            ty: T/#0,
+            temp_lifetime: TempLifetime {
+                temp_lifetime: Some(
+                    Node(11),
+                ),
+                backwards_incompatible: None,
+            },
+            span: src/lib.rs:4:5: 4:6 (#0),
+        },
+        Expr {
+            kind: Scope {
+                region_scope: Node(7),
+                lint_level: Explicit(
+                    HirId(DefId(0:4 ~ rust_playground[a18a]::add).7),
+                ),
+                value: e0,
+            },
+            ty: T/#0,
+            temp_lifetime: TempLifetime {
+                temp_lifetime: Some(
+                    Node(11),
+                ),
+                backwards_incompatible: None,
+            },
+            span: src/lib.rs:4:5: 4:6 (#0),
+        },
+        Expr {
+            kind: VarRef {
+                id: LocalVarId(
+                    HirId(DefId(0:4 ~ rust_playground[a18a]::add).4),
+                ),
+            },
+            ty: T/#0,
+            temp_lifetime: TempLifetime {
+                temp_lifetime: Some(
+                    Node(11),
+                ),
+                backwards_incompatible: None,
+            },
+            span: src/lib.rs:4:9: 4:10 (#0),
+        },
+        Expr {
+            kind: Scope {
+                region_scope: Node(9),
+                lint_level: Explicit(
+                    HirId(DefId(0:4 ~ rust_playground[a18a]::add).9),
+                ),
+                value: e2,
+            },
+            ty: T/#0,
+            temp_lifetime: TempLifetime {
+                temp_lifetime: Some(
+                    Node(11),
+                ),
+                backwards_incompatible: None,
+            },
+            span: src/lib.rs:4:9: 4:10 (#0),
+        },
+        Expr {
+            kind: ZstLiteral {
+                user_ty: None,
+            },
+            ty: FnDef(
+                DefId(2:3797 ~ core[f655]::ops::arith::Add::add),
+                [
+                    T/#0,
+                    T/#0,
+                ],
+            ),
+            temp_lifetime: TempLifetime {
+                temp_lifetime: Some(
+                    Node(11),
+                ),
+                backwards_incompatible: None,
+            },
+            span: src/lib.rs:4:5: 4:10 (#0),
+        },
+        Expr {
+            kind: Call {
+                ty: FnDef(
+                    DefId(2:3797 ~ core[f655]::ops::arith::Add::add),
+                    [
+                        T/#0,
+                        T/#0,
+                    ],
+                ),
+                fun: e4,
+                args: [
+                    e1,
+                    e3,
+                ],
+                from_hir_call: false,
+                fn_span: src/lib.rs:4:5: 4:10 (#0),
+            },
+            ty: T/#0,
+            temp_lifetime: TempLifetime {
+                temp_lifetime: Some(
+                    Node(11),
+                ),
+                backwards_incompatible: None,
+            },
+            span: src/lib.rs:4:5: 4:10 (#0),
+        },
+        Expr {
+            kind: Scope {
+                region_scope: Node(6),
+                lint_level: Explicit(
+                    HirId(DefId(0:4 ~ rust_playground[a18a]::add).6),
+                ),
+                value: e5,
+            },
+            ty: T/#0,
+            temp_lifetime: TempLifetime {
+                temp_lifetime: Some(
+                    Node(11),
+                ),
+                backwards_incompatible: None,
+            },
+            span: src/lib.rs:4:5: 4:10 (#0),
+        },
+        Expr {
+            kind: Block {
+                block: b0,
+            },
+            ty: T/#0,
+            temp_lifetime: TempLifetime {
+                temp_lifetime: Some(
+                    Node(11),
+                ),
+                backwards_incompatible: None,
+            },
+            span: src/lib.rs:3:45: 5:2 (#0),
+        },
+        Expr {
+            kind: Scope {
+                region_scope: Node(11),
+                lint_level: Explicit(
+                    HirId(DefId(0:4 ~ rust_playground[a18a]::add).11),
+                ),
+                value: e7,
+            },
+            ty: T/#0,
+            temp_lifetime: TempLifetime {
+                temp_lifetime: Some(
+                    Node(11),
+                ),
+                backwards_incompatible: None,
+            },
+            span: src/lib.rs:3:45: 5:2 (#0),
+        },
+    ],
+    stmts: [],
+    params: [
+        Param {
+            pat: Some(
+                Pat {
+                    ty: T/#0,
+                    span: src/lib.rs:3:28: 3:29 (#0),
+                    kind: Binding {
+                        name: "a",
+                        mode: BindingMode(
+                            No,
+                            Not,
+                        ),
+                        var: LocalVarId(
+                            HirId(DefId(0:4 ~ rust_playground[a18a]::add).2),
+                        ),
+                        ty: T/#0,
+                        subpattern: None,
+                        is_primary: true,
+                    },
+                },
+            ),
+            ty: T/#0,
+            ty_span: Some(
+                src/lib.rs:3:31: 3:32 (#0),
+            ),
+            self_kind: None,
+            hir_id: Some(
+                HirId(DefId(0:4 ~ rust_playground[a18a]::add).1),
+            ),
+        },
+        Param {
+            pat: Some(
+                Pat {
+                    ty: T/#0,
+                    span: src/lib.rs:3:34: 3:35 (#0),
+                    kind: Binding {
+                        name: "b",
+                        mode: BindingMode(
+                            No,
+                            Not,
+                        ),
+                        var: LocalVarId(
+                            HirId(DefId(0:4 ~ rust_playground[a18a]::add).4),
+                        ),
+                        ty: T/#0,
+                        subpattern: None,
+                        is_primary: true,
+                    },
+                },
+            ),
+            ty: T/#0,
+            ty_span: Some(
+                src/lib.rs:3:37: 3:38 (#0),
+            ),
+            self_kind: None,
+            hir_id: Some(
+                HirId(DefId(0:4 ~ rust_playground[a18a]::add).3),
+            ),
+        },
+    ],
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="mir---mid-level-intermediate-representation"><a class="header" href="#mir---mid-level-intermediate-representation">MIR - Mid-Level Intermediate Representation</a></h3>
+<p>MIR is Rust's Mid-level Intermediate Representation. It is constructed from THIR.</p>
+<p>Some of the key characteristics of MIR are:</p>
+<ul>
+<li>It is based on a control-flow graph.</li>
+<li>It does not have nested expressions.</li>
+<li>All types in MIR are fully explicit.</li>
+</ul>
+<p>MIR is used for certain flow-sensitive safety checks (borrow checker) , optimization, code generation.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// cargo rustc -- -Z unpretty=mir
+fn add(_1: T, _2: T) -&gt; T {
+    debug a =&gt; _1;
+    debug b =&gt; _2;
+    let mut _0: T;
+
+    bb0: {
+        _0 = &lt;T as Add&gt;::add(move _1, move _2) -&gt; [return: bb1, unwind continue];
+    }
+
+    bb1: {
+        return;
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="ch02-00-introduction-to-mir.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="ch02-02-the-core-concepts-mir.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="ch02-00-introduction-to-mir.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="ch02-02-the-core-concepts-mir.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>
