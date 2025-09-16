@@ -23,3 +23,7 @@
     -   [Workflow](ch04-01-workflow.md)
     -   [Implementation Architecture](ch04-02-implementation-architecture.md)
 
+-   [Contributing to RPL](ch05-00-contributing-to-rpl.md)
+    -   [How to Model an RPL Pattern](ch05-01-how-to-model-an-rpl-pattern.md)
+    -   [How to Test an RPL Pattern](ch05-02-how-to-test-an-rpl-pattern.md)
+
